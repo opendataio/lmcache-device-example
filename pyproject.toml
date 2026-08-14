@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lmcache-device-example"
+version = "0.1.0"
+description = "Example out-of-tree LMCache device backend distributed as a wheel."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "OpenDataIO", email = "307499405@qq.com" }]
+dependencies = ["lmcache"]
+
+[project.entry-points."lmcache.v1.device_specs"]
+example_cpu = "lmcache_device_example.device:ExampleDeviceSpec"
+
+[project.scripts]
+lmcache-device-example-validate = "lmcache_device_example.validate:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["lmcache_device_example", "lmcache_device_example*"]
