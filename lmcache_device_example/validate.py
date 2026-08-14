@@ -53,8 +53,6 @@ def validate_install() -> dict[str, str]:
         current_device_spec,
         get_device_spec,
         get_torch_device,
-        resolve_device_ops,
-        resolve_kv_wrapper_factory,
     )
 
     entry_points = _entry_points_for_group("lmcache.v1.device_specs")
@@ -73,19 +71,40 @@ def validate_install() -> dict[str, str]:
     assert lmcache.torch_device_type == _DEVICE_TYPE
     assert current_device_spec.device_type == _DEVICE_TYPE
 
-    ops = resolve_device_ops(_DEVICE_TYPE)
+    ops_status = _validate_runtime_bindings(torch)
+
+    return {
+        "device_type": detected_device_type,
+        "torch_module_name": spec.torch_module_name,
+        "ops_cls": ops_status,
+    }
+
+
+def _validate_runtime_bindings(torch: object) -> str:
+    """Validate runtime bindings when LMCache native modules are importable.
+
+    Returns:
+        A short status string describing whether runtime DeviceOps validation
+        ran or was skipped because ``lmcache.lmcache_native`` is unavailable in
+        the current environment.
+    """
+    # First Party
+    from lmcache.v1.platform import resolve_device_ops, resolve_kv_wrapper_factory
+
+    try:
+        ops = resolve_device_ops(_DEVICE_TYPE)
+    except ModuleNotFoundError as exc:
+        if exc.name != "lmcache.lmcache_native":
+            raise
+        return "skipped: lmcache.lmcache_native unavailable"
+
     assert type(ops).__name__ == "ExampleDeviceOps"
 
     wrapper_factory = resolve_kv_wrapper_factory(_DEVICE_TYPE)
     wrapped_tensor = wrapper_factory(torch.zeros(4, dtype=torch.float32))
     assert getattr(wrapped_tensor, "device_uuid", None) == "cpu"
     assert tuple(getattr(wrapped_tensor, "shape", ())) == (4,)
-
-    return {
-        "device_type": detected_device_type,
-        "torch_module_name": spec.torch_module_name,
-        "ops_cls": type(ops).__name__,
-    }
+    return type(ops).__name__
 
 
 def main() -> None:

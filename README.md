@@ -98,6 +98,13 @@ The workflow currently defaults to validating against:
 That default should be updated once entry-point discovery lands on a stable
 LMCache branch.
 
+In a fresh temporary environment, the validation treats missing
+`lmcache.lmcache_native` as a signal to skip the deeper `DeviceOps`
+instantiation checks and keep the CI focused on wheel packaging,
+entry-point discovery, and explicit device selection. The
+`validate_with_existing_env.sh` path remains the stronger check when you
+already have a working LMCache environment.
+
 ## Manual validation
 
 After installing LMCache and this wheel into the same environment:
