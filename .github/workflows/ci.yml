@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      lmcache_repo:
+        description: LMCache git repository URL to validate against
+        required: false
+        default: https://github.com/maobaolong/LMCache.git
+      lmcache_ref:
+        description: LMCache git ref to validate against
+        required: false
+        default: mbl/device-spec-entrypoint-discovery
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    env:
+      DEFAULT_LMCACHE_REPO: https://github.com/maobaolong/LMCache.git
+      DEFAULT_LMCACHE_REF: mbl/device-spec-entrypoint-discovery
+    steps:
+      - name: Checkout example backend
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Resolve LMCache target
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "LMCACHE_REPO=${{ inputs.lmcache_repo }}" >> "${GITHUB_ENV}"
+            echo "LMCACHE_REF=${{ inputs.lmcache_ref }}" >> "${GITHUB_ENV}"
+          else
+            echo "LMCACHE_REPO=${DEFAULT_LMCACHE_REPO}" >> "${GITHUB_ENV}"
+            echo "LMCACHE_REF=${DEFAULT_LMCACHE_REF}" >> "${GITHUB_ENV}"
+          fi
+
+      - name: Build wheel
+        run: uv build
+
+      - name: Validate against LMCache
+        run: scripts/ci_validate_against_lmcache.sh "${LMCACHE_REPO}" "${LMCACHE_REF}"

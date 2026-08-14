@@ -35,3 +35,6 @@ LMCache device backend distributed as a wheel.
   `scripts/validate_with_existing_env.sh /path/to/python /path/to/LMCache`.
   A fresh source-only LMCache install may still fail to import if its native
   module set is incomplete for the host.
+- CI in this repository validates against a configurable LMCache git ref via
+  `scripts/ci_validate_against_lmcache.sh`. Keep the default ref aligned with
+  whichever LMCache branch or release first contains entry-point discovery.

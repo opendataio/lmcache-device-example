@@ -80,6 +80,24 @@ The script will:
 This path is convenient for packaging checks, but it assumes the supplied
 LMCache install path can import all required native modules on that host.
 
+## Continuous Integration
+
+This repository includes a GitHub Actions workflow that:
+
+1. builds the wheel
+2. clones a target LMCache repository and ref
+3. installs LMCache into a fresh Python 3.12 environment
+4. installs this wheel
+5. runs `lmcache-device-example-validate`
+
+The workflow currently defaults to validating against:
+
+- repository: `https://github.com/maobaolong/LMCache.git`
+- ref: `mbl/device-spec-entrypoint-discovery`
+
+That default should be updated once entry-point discovery lands on a stable
+LMCache branch.
+
 ## Manual validation
 
 After installing LMCache and this wheel into the same environment:
